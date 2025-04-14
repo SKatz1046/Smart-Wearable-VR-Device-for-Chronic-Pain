@@ -1,0 +1,256 @@
+import tkinter as tk
+from tkinter import messagebox
+from PIL import Image, ImageTk
+
+# Emotion categories
+positive_emotions = ["happy", "excited"]
+negative_emotions = ["anxious", "nervous", "scared"]
+
+# Route determination function
+def determine_route():
+    if (puppy_choice.get() in positive_emotions) or (climb_choice.get() in negative_emotions):
+        route = "Relaxed Route"
+    elif climb_choice.get() in positive_emotions:
+        route = "Thrill Route"
+    elif climb_choice.get() in negative_emotions:
+        route = "Cute Route"
+    else:
+        route = "Unknown Route"
+
+    messagebox.showinfo("Route Selected", f"You will proceed to the {route}!")
+
+# GUI setup
+root = tk.Tk()
+root.title("Emotion-Based Route Selector")
+
+# Load and display puppy image
+puppy_img = Image.open("puppy.jpg").resize((400, 300))  # Ensure you have this image
+puppy_photo = ImageTk.PhotoImage(puppy_img)
+
+puppy_label = tk.Label(root, image=puppy_photo)
+puppy_label.pack()
+
+tk.Label(root, text="How does this puppy make you feel?").pack()
+puppy_choice = tk.StringVar(value="happy")
+
+for emotion in positive_emotions + negative_emotions:
+    tk.Radiobutton(root, text=emotion.capitalize(), variable=puppy_choice, value=emotion).pack()
+
+# Load and display rock climbing image
+climb_img = Image.open("rock_climbing.jpg").resize((400, 300))  # Ensure you have this image
+climb_photo = ImageTk.PhotoImage(climb_img)
+
+climb_label = tk.Label(root, image=climb_photo)
+climb_label.pack()
+
+tk.Label(root, text="How does this rock climbing image make you feel?").pack()
+climb_choice = tk.StringVar(value="excited")
+
+for emotion in positive_emotions + negative_emotions:
+    tk.Radiobutton(root, text=emotion.capitalize(), variable=climb_choice, value=emotion).pack()
+
+# Submit button
+submit_button = tk.Button(root, text="Submit", command=determine_route)
+submit_button.pack()
+
+# Run the GUI loop
+root.mainloop()
+
+Figure 5 below demonstrates the proposed Python code for the sensor feature of this wearable device. Based on the individual user’s emotional responses to the trial images (positive and stress-inducing), the device would progress the experience to the positive route (Cute) or the stress-inducing route (Thriller). The initial trial stage would begin only if the user does not select either route right away.
+
+Figure 5. Python Code for Pulse Sensor Monitoring
+
+Prompt user to select Cute route or Thriller route:
+import tkinter as tk
+from tkinter import messagebox
+import webbrowser
+import pygame
+
+# Define assets (Replace with actual file paths or URLs)
+CUTE_IMAGES = ["puppy.jpg", "smiling_people.jpg", "ocean.jpg"]  # Replace with actual file paths
+CUTE_SOUND = "ocean_waves.mp3"  # Replace with actual file path
+
+THRILLER_IMAGES = ["skydiving.jpg", "bungee.jpg", "mountain_biking.jpg"]  # Replace with actual file paths
+THRILLER_SOUND = "suspense_music.mp3"  # Replace with actual file path
+
+# Initialize pygame mixer for sound
+pygame.mixer.init()
+
+# Function to display images and play sound
+def show_route(route):
+    if route == "Cute":
+        images = CUTE_IMAGES
+        sound = CUTE_SOUND
+        messagebox.showinfo("Selection", "Welcome to the Cute Route! Enjoy puppies, smiles, and ocean sounds.")
+    else:
+        images = THRILLER_IMAGES
+        sound = THRILLER_SOUND
+        messagebox.showinfo("Selection", "Welcome to the Thriller Route! Enjoy extreme sports and suspenseful music.")
+
+    # Open images (assuming URLs; replace with actual file paths if needed)
+    for img in images:
+        webbrowser.open(img)
+
+    # Play sound
+    pygame.mixer.music.load(sound)
+    pygame.mixer.music.play()
+
+# GUI Setup
+root = tk.Tk()
+root.title("Choose Your Adventure")
+
+label = tk.Label(root, text="Select your route:", font=("Arial", 14))
+label.pack(pady=10)
+
+btn_cute = tk.Button(root, text="Cute Route", command=lambda: show_route("Cute"), bg="pink", fg="white", font=("Arial", 12))
+btn_cute.pack(pady=5)
+
+btn_thriller = tk.Button(root, text="Thriller Route", command=lambda: show_route("Thriller"), bg="red", fg="white", font=("Arial", 12))
+btn_thriller.pack(pady=5)
+
+root.mainloop()
+
+To integrate a pulse sensor (such as a Pulse Sensor Amped or a heart rate monitor using an Arduino), we need to modify the script to read real-time pulse data from a sensor instead of simulating it.
+We will assume:
+1.	The pulse sensor is connected via Arduino, and data is sent over serial communication (USB).
+2.	The Arduino continuously sends BPM values that we read in Python.
+ 
+Updated Python Script (with Pulse Sensor Integration)
+This version uses pyserial to communicate with Arduino.
+python
+CopyEdit
+import cv2
+import time
+import serial
+import pygame
+
+# Serial Port Configuration (Update the port name as per your system)
+SERIAL_PORT = "COM3"  # Windows Example: COM3 | Mac/Linux Example: /dev/ttyUSB0
+BAUD_RATE = 9600
+
+# Connect to the pulse sensor via Serial
+try:
+    ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=2)
+    time.sleep(2)  # Allow time for connection
+    print("Connected to Pulse Sensor.")
+except Exception as e:
+    print(f"Error connecting to sensor: {e}")
+    exit()
+
+# Initialize pygame for sound playback
+pygame.mixer.init()
+
+# Image & Sound Paths
+image_puppy = "puppy.jpg"
+image_bungee = "bungee.jpg"
+cute_sound = "cute.mp3"
+thrill_sound = "thrill.mp3"
+
+# Function to read pulse rate from sensor
+def get_pulse_rate():
+    try:
+        ser.flushInput()  # Clear buffer
+        line = ser.readline().decode('utf-8').strip()
+        return int(line) if line.isdigit() else None
+    except Exception as e:
+        print(f"Error reading pulse: {e}")
+        return None
+
+# Display an image
+def show_image(image_path, window_name="Image"):
+    img = cv2.imread(image_path)
+    if img is None:
+        print(f"Error: Could not load image {image_path}")
+        return
+    cv2.imshow(window_name, img)
+    cv2.waitKey(2000)  # Display image for 2 seconds
+    cv2.destroyAllWindows()
+
+# Play sound
+def play_sound(sound_path):
+    pygame.mixer.music.load(sound_path)
+    pygame.mixer.music.play()
+    time.sleep(2)
+    pygame.mixer.music.stop()
+
+# Main function
+def main():
+    print("Waiting for initial pulse reading...")
+
+    # Get baseline pulse rate
+    initial_pulse = None
+    while initial_pulse is None:
+        initial_pulse = get_pulse_rate()
+
+    print(f"Initial Pulse Rate: {initial_pulse} bpm")
+
+    preselected_route = None  # Set to "A" or "B" if user preselects
+
+    if preselected_route is None:
+        print("No route preselected. Showing both images...")
+        show_image(image_puppy, "Cute Puppy")
+        time.sleep(1)
+        show_image(image_bungee, "Bungee Jumper")
+
+        print("Waiting for pulse change...")
+        time.sleep(3)  # Give time for heart rate to react
+        post_bungee_pulse = get_pulse_rate()
+
+        if post_bungee_pulse:
+            print(f"Pulse Rate after Bungee Image: {post_bungee_pulse} bpm")
+            if post_bungee_pulse > initial_pulse:
+                print("Pulse increased! Choosing Cute Route (A).")
+                preselected_route = "A"
+            else:
+                print("No significant increase. Choosing Thrill Route (B).")
+                preselected_route = "B"
+        else:
+            print("Error reading pulse. Defaulting to Thrill Route.")
+            preselected_route = "B"
+
+    if preselected_route == "A":
+        print("Entering Cute Route...")
+        show_image("kitten.jpg")
+        play_sound(cute_sound)
+    else:
+        print("Entering Thrill Route...")
+        show_image("skydiving.jpg")
+        play_sound(thrill_sound)
+
+if __name__ == "__main__":
+    main()
+ 
+Arduino Code (Pulse Sensor)
+This is a basic Arduino sketch to send heart rate data over Serial.
+cpp
+CopyEdit
+const int pulsePin = A0;  // Pulse Sensor connected to A0
+int pulseValue = 0;
+
+void setup() {
+    Serial.begin(9600);
+}
+
+void loop() {
+    pulseValue = analogRead(pulsePin);
+    int bpm = map(pulseValue, 500, 900, 60, 120);  // Adjust mapping as needed
+    Serial.println(bpm);  // Send BPM over Serial
+    delay(500);
+}
+
+What This Script Does
+1.	Connects to an Arduino pulse sensor via a serial port (e.g., COM3 or /dev/ttyUSB0).
+2.	Reads real-time heart rate (BPM).
+3.	Shows the user both images (if no preselection).
+4.	Checks heart rate change after showing the bungee jumper image. 
+o	If pulse increases → User prefers Cute Route (A).
+o	If no change → User prefers Thrill Route (B).
+5.	Displays more images & plays sounds based on the selected route.
+
+Requirements
+•	Install OpenCV & Pygame: 
+nginx
+CopyEdit
+pip install opencv-python pygame pyserial
+•	Connect Pulse Sensor to an Arduino, upload the Arduino sketch, and find the correct serial port.
+•	Ensure the images (puppy.jpg, bungee.jpg, etc.) and sounds (cute.mp3, thrill.mp3) exist.
