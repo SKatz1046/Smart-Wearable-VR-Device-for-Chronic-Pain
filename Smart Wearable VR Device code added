@@ -56,10 +56,6 @@ submit_button.pack()
 # Run the GUI loop
 root.mainloop()
 
-Figure 5 below demonstrates the proposed Python code for the sensor feature of this wearable device. Based on the individual user’s emotional responses to the trial images (positive and stress-inducing), the device would progress the experience to the positive route (Cute) or the stress-inducing route (Thriller). The initial trial stage would begin only if the user does not select either route right away.
-
-Figure 5. Python Code for Pulse Sensor Monitoring
-
 Prompt user to select Cute route or Thriller route:
 import tkinter as tk
 from tkinter import messagebox
